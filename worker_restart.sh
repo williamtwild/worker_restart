@@ -10,36 +10,36 @@
 ################################################################################
 global_script_array=()
 #
-# set the defaults and examples of the format of the restart_script.config file
+# example of the format of the restart_script.config file
 #
-global_this_server="none"
-global_log_to_screen=1
-global_log_to_file=1
-global_user_owner="root"
-global_email_to="none@gmail.com"
-global_email_from="none@none.com"
-global_email_from_name="None"
-global_email_sendgrid_key="bogus_key"
-global_project_path="/home/$global_user_owner/project_directory"
-global_path_for_files="$global_project_path/this_script_directory"
-global_healthcheck_token="bogus_token"
+#  global_this_server="none"
+#  global_log_to_screen=1
+#  global_log_to_file=1
+#  global_user_owner="root"
+#  global_email_to="none@gmail.com"
+#  global_email_from="none@none.com"
+#  global_email_from_name="None"
+#  global_email_sendgrid_key="bogus_key"
+#  global_project_path="/home/$global_user_owner/project_directory"
+#  global_path_for_files="$global_project_path/this_script_directory"
+#  global_healthcheck_token="bogus_token"
 
 # i use the screen_name for the array to append to the global_array
 # the screen name is always different for each script. you can use anything really as
 # long as they are unique in the global_script_array. tried to dynamically use the screen_name
 # var to declare the argument array but declare does not like arrays and eval is too risky
 # if you mistype something. 
-script_root_name="name_of_script"
-screen_name="name_of_the_screen_to_target"
-process_grep="python_node_etc"
-script_command="$script_root_name.py maybe_some_arguments"
-start_with="python2_node_etc"
-script_path="/home/$global_user_owner/{project_directory}/{directory_of_the_script_to_check_and_start}"
-name_of_the_screen_to_target=( "$script_root_name" "$script_command" "$screen_name" "$process_grep" "$start_with" "$script_path" )
-global_script_array+=("name_of_the_screen_to_target")
+#  script_root_name="name_of_script"
+#  screen_name="name_of_the_screen_to_target"
+#  process_grep="python_node_etc"
+#  script_command="$script_root_name.py maybe_some_arguments"
+#  start_with="python2_node_etc"
+#  script_path="/home/$global_user_owner/{project_directory}/{directory_of_the_script_to_check_and_start}"
+#  name_of_the_screen_to_target=( "$script_root_name" "$script_command" "$screen_name" "$process_grep" "$start_with" "$script_path" )
+#  global_script_array+=("name_of_the_screen_to_target")
 #
 #
-# end defaults and sample 
+# end sample 
 #
 #
 #
