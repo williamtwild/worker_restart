@@ -8,6 +8,7 @@
 # vars and config file restart_script.config loading 
 #
 ################################################################################
+global_script_array=()
 #
 # set the defaults and examples of the format of the restart_script.config file
 #
@@ -22,7 +23,6 @@ global_email_sendgrid_key="bogus_key"
 global_project_path="/home/$global_user_owner/project_directory"
 global_path_for_files="$global_project_path/this_script_directory"
 global_healthcheck_token="bogus_token"
-global_script_array=()
 
 # i use the screen_name for the array to append to the global_array
 # the screen name is always different for each script. you can use anything really as
