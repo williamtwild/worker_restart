@@ -78,6 +78,9 @@ log_this() {
     (( $global_log_to_screen > 0 )) && echo `date +%F" "%T` "$text_to_log"
 }
 
+
+
+
 check_script() {
     sleep .2
     script_root_name="$1"
@@ -89,7 +92,50 @@ check_script() {
     # i use the screen name since they are always unique. 
     script_email_count_filename="email_count.$screen_name"
     script_running_count_filename="running_count.$screen_name"
+    screen_start_count_filename="screen_count.$screen_name"
     #
+    #
+    # first see if the screen exists and if it doees not try to create the session
+    # if it cannot create the session then just bail and dont try to run the script  
+    # but contine to try and create the screen for some cycles and then bail   
+    if ! screen -list | grep "$screen_name" >> /dev/null; then 
+        log_this "$screen_name screen not found"
+        if test -f "$global_path_for_files/$screen_start_count_filename";
+            then
+                log_this "    $screen_start_count_filename exists."
+                screen_count=$(<"$global_path_for_files/$screen_start_count_filename")
+                log_this "    loaded $screen_count from $screen_start_count_filename"
+                ((screen_count=screen_count+1))
+            else
+                echo 1 > "$global_path_for_files/$screen_start_count_filename"
+                screen_count=1
+        fi
+
+        if (( $screen_count < 5 )); 
+            then
+                send_email "$screen_name screen not found $screen_count" "$version"
+                sudo -u $global_user_owner screen -dmS $screen_name
+                sleep .1
+                sudo -u $global_user_owner screen -S $screen_name -p 0 -X stuff "cd $script_path ^M"
+                sleep .5
+                if ! screen -list | grep "$screen_name" >> /dev/null; 
+                    then
+                        log_this "    $screen_name creation failed."
+                        send_email "$screen_name creation failed" "$version"
+                        return 0
+                    else
+                        rm "$global_path_for_files/$screen_start_count_filename"
+                        log_this "    $screen_name creation success"
+                fi
+            else
+                if (( $screen_count == 5 )); then
+                    send_email "$screen_name creation bypassed" "$version"
+                fi
+                return 0
+        fi
+    fi    
+
+
     if ! pgrep -a $process_grep | grep "$script_command" >> /dev/null;
         then
             log_this "$script_command is not running"
@@ -130,7 +176,7 @@ check_script() {
             # if it looks good then send an email
             if (( $email_count < 5 ));
                 then
-                    sleep 5
+                    sleep 2
                     if pgrep -a $process_grep | grep "$script_command" >> /dev/null; then
                         send_email "$script_command restart ok so far count $email_count" "$version"
                         log_this "    $script_command restart ok so far"
@@ -170,7 +216,7 @@ if test -f "$global_path_for_files/kill"; then
     exit 0
 fi
 ping_healthcheck
-version="2.0.1"
+version="3.0.0"
 log_this " "
 #
 #
