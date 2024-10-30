@@ -21,7 +21,6 @@ global_script_array=()
 #  global_email_from_name="None"
 #  global_email_sendgrid_key="bogus_key"
 #  global_project_path="/home/$global_user_owner/project_directory"
-#  global_path_for_files="$global_project_path/this_script_directory"
 #  global_healthcheck_token="bogus_token"
 
 # i use the screen_name for the array to append to the global_array
@@ -46,13 +45,22 @@ global_script_array=()
 # set the path to the config. all paths should be absolute since we are 
 # running with the cron
 #
-config_script_path="/home/williamtwild/workers/worker_restart_script"
+
+wdir="$PWD"; [ "$PWD" = "/" ] && wdir=""
+case "$0" in
+  /*) scriptdir="${0}";;
+  *) scriptdir="$wdir/${0#./}";;
+esac
+config_script_path="${scriptdir%/*}"
+
+
 if ! test -f "$config_script_path/restart_script.config"; then
     echo "no config found . exiting. "
     exit 0
 fi
-source /home/williamtwild/workers/worker_restart_script/restart_script.config
+source "$config_script_path/restart_script.config"
 
+global_path_for_files=$config_script_path
 
 ################################################################################
 #
@@ -113,7 +121,7 @@ check_script() {
 
         if (( $screen_count < 5 )); 
             then
-                send_email "$screen_name screen not found $screen_count" "$version"
+                send_email "screen not found $screen_name $screen_count" "$version"
                 sudo -u $global_user_owner screen -dmS $screen_name
                 sleep .1
                 sudo -u $global_user_owner screen -S $screen_name -p 0 -X stuff "cd $script_path ^M"
@@ -121,7 +129,7 @@ check_script() {
                 if ! screen -list | grep "$screen_name" >> /dev/null; 
                     then
                         log_this "    $screen_name creation failed."
-                        send_email "$screen_name creation failed" "$version"
+                        send_email "creation failed $screen_name" "$version"
                         return 0
                     else
                         rm "$global_path_for_files/$screen_start_count_filename"
@@ -129,7 +137,7 @@ check_script() {
                 fi
             else
                 if (( $screen_count == 5 )); then
-                    send_email "$screen_name creation bypassed" "$version"
+                    send_email "creation bypassed $screen_name" "$version"
                 fi
                 return 0
         fi
@@ -159,16 +167,16 @@ check_script() {
             # see if we should send an email
             if (( $email_count < 2 ));
                 then
-                    send_email "$script_command restart attempt 1" "$version"
+                    send_email "restart attempt 1 $script_command" "$version"
             elif (( $email_count == 10 ));
                 then
-                    send_email "$script_command restart attempt 10" "$version"
+                    send_email "retsart attempt 10 $script_command" "$version"
             elif (( $email_count == 50 ));
                 then
-                    send_email "$script_command restart attempt 50" "$version"
+                    send_email "restart attempt 50 $script_command" "$version"
             elif (( $email_count == 100 ));
                 then
-                    send_email "$script_command final restart attempt 100 final email" "$version"
+                    send_email "final attempt $script_command" "$version"
             fi
 
             #
@@ -178,7 +186,7 @@ check_script() {
                 then
                     sleep 2
                     if pgrep -a $process_grep | grep "$script_command" >> /dev/null; then
-                        send_email "$script_command restart ok so far count $email_count" "$version"
+                        send_email "restart ok $script_command count $email_count" "$version"
                         log_this "    $script_command restart ok so far"
                     fi
             fi
@@ -190,7 +198,7 @@ check_script() {
                     ((running_count=running_count+1))
                     echo $running_count > "$global_path_for_files/$script_running_count_filename"
                     if (( $running_count == 20 )); then
-                        send_email "$script_command seems stable" "$version"
+                        send_email "stable $script_command" "$version"
                         if test -f "$global_path_for_files/$script_email_count_filename"; then
                             rm "$global_path_for_files/$script_email_count_filename"
                         fi
@@ -216,7 +224,9 @@ if test -f "$global_path_for_files/kill"; then
     exit 0
 fi
 ping_healthcheck
-version="3.0.0"
+version="24.10.30-002"
+log_this " "
+log_this "$version"
 log_this " "
 #
 #
